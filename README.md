@@ -3,7 +3,7 @@
 A multi-agent system that searches products, compares prices, summarizes reviews,
 and produces an explained recommendation.
 
-## Status: Step 2 - Recommendation Agent added (standalone, no orchestration yet)
+## Status: Step 4 - Full pipeline working (Search -> Price -> Recommendation)
 
 ## Stack: 100% free
 
@@ -44,14 +44,22 @@ and produces an explained recommendation.
    ```
    You should see JSON output ranking 3 sample earbuds with reasoning.
 
+6. Run the full pipeline (all 3 agents connected):
+   ```
+   python orchestrator.py "wireless earbuds under 50 dollars"
+   ```
+   You should see progress for each agent, then a ranked list with reasoning,
+   and a `last_result.json` file saved with the full output.
+
 ## Build order (do not skip ahead)
 
 - [x] Step 1: `search_agent.py` - standalone SerpAPI call, works with no framework
 - [x] Step 2: `recommendation_agent.py` - standalone Gemini call, ranks products with reasoning
-- [ ] Step 3: Price comparison logic (group same product across sources)
-- [ ] Step 4: Review summarizer agent (Amazon Reviews dataset + Gemini)
-- [ ] Step 5: Wire steps 1-4 into a LangGraph graph
-- [ ] Step 6: Simple frontend
+- [x] Step 3: `price_agent.py` - deterministic value scoring, no LLM needed
+- [x] Step 4: `orchestrator.py` - connects all 3 agents into one pipeline
+- [ ] Step 5: Review Summarizer agent (Amazon Reviews dataset + Gemini)
+- [ ] Step 6: Wire into LangGraph for parallel execution
+- [ ] Step 7: Simple frontend
 
 ## Why this order
 
