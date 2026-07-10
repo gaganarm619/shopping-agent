@@ -1,32 +1,69 @@
-\# E-commerce Multi-Agent Shopping Assistant
-
-
+# E-commerce Multi-Agent Shopping Assistant
 
 A multi-agent system that searches products, compares prices, summarizes reviews,
-
 and produces an explained recommendation.
 
+## Status: Step 5 - All 4 agents working (Search -> Price -> Review Summarizer -> Recommendation)
 
+## Stack: 100% free
 
-\## Status: Step 5 - All 4 agents working (Search -> Price -> Review Summarizer -> Recommendation)
+- **Gemini API** (Google) - free tier, 1,500 requests/day, no credit card
+- **SerpAPI** - free tier, 100 searches/month, no credit card
+- **Kaggle** Amazon Reviews dataset - free download
 
+## Setup
 
+1. Create and activate a virtual environment:
+   ```
+   python -m venv venv
+   venv\Scripts\activate          # Windows
+   source venv/bin/activate       # Mac/Linux
+   ```
 
-\## Stack: 100% free
+2. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
 
+3. Copy `.env.example` to `.env` and fill in your keys:
+   ```
+   cp .env.example .env
+   ```
+   - Get a Gemini key (free) at aistudio.google.com/app/apikey
+   - Get a SerpAPI key (free tier) at serpapi.com
 
+4. Download the review dataset (not included in this repo - too large for git):
+   - Go to Kaggle, search "Consumer Reviews of Amazon Products"
+   - Download and extract into an `archive/` folder in the project root
+   - The pipeline expects `archive/1429_1.csv`
 
-\- \*\*Gemini API\*\* (Google) - free tier, 1,500 requests/day, no credit card
+5. Test each agent individually:
+   ```
+   python search_agent.py
+   python price_agent.py
+   python review_agent.py
+   python recommendation_agent.py
+   ```
 
-\- \*\*SerpAPI\*\* - free tier, 100 searches/month, no credit card
+6. Run the full pipeline (all 4 agents connected):
+   ```
+   python orchestrator.py "wireless earbuds under 50 dollars"
+   ```
+   You'll see progress for each of the 4 agents, then a ranked list with
+   reasoning grounded in both price/rating data and real customer reviews.
+   Full output also saved to `last_result.json`.
 
-\- \*\*Kaggle\*\* Amazon Reviews dataset - free download
+## Build order (do not skip ahead)
 
+- [x] Step 1: `search_agent.py` - standalone SerpAPI call, works with no framework
+- [x] Step 2: `recommendation_agent.py` - standalone Gemini call, ranks products with reasoning
+- [x] Step 3: `price_agent.py` - deterministic value scoring, no LLM needed
+- [x] Step 4: `orchestrator.py` - connects agents into one pipeline
+- [x] Step 5: `review_agent.py` - synthesizes real customer reviews, feeds into Recommendation Agent
+- [ ] Step 6: Wire into LangGraph for parallel execution
+- [ ] Step 7: Simple frontend
 
+## Why this order
 
-\## Setup
-
-
-
-1\. Create and activate a virtual environment:
-
+Each piece is testable in isolation before it touches the agent framework.
+If something breaks later, you'll know it's the orchestration, not the underlying logic.
