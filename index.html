@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shopping Assistant</title>
+<style>
+  body {
+    font-family: -apple-system, Segoe UI, sans-serif;
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 0 20px;
+    background: #fafafa;
+    color: #1a1a1a;
+  }
+  h1 { font-size: 24px; margin-bottom: 4px; }
+  p.sub { color: #666; margin-top: 0; margin-bottom: 24px; }
+  form { display: flex; gap: 8px; margin-bottom: 24px; }
+  input[type=text] {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  button {
+    padding: 10px 18px;
+    font-size: 15px;
+    background: #1a1a1a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:disabled { background: #999; cursor: default; }
+  .status { color: #666; font-size: 14px; margin-bottom: 16px; }
+  .product {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .product .rank { font-weight: 600; }
+  .product .meta { color: #666; font-size: 14px; margin: 4px 0; }
+  .product .why { font-size: 14px; }
+  .overall {
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  .error { color: #b00020; }
+</style>
+</head>
+<body>
+
+<h1>Multi-Agent Shopping Assistant</h1>
+<p class="sub">Search, price comparison, review synthesis, and AI recommendation - 4 agents, one query.</p>
+
+<form id="searchForm">
+  <input type="text" id="query" placeholder="e.g. wireless earbuds under 50 dollars" required>
+  <button type="submit" id="submitBtn">Search</button>
+</form>
+
+<div id="status" class="status"></div>
+<div id="results"></div>
+
+<script>
+var form = document.getElementById('searchForm');
+var statusEl = document.getElementById('status');
+var resultsEl = document.getElementById('results');
+var submitBtn = document.getElementById('submitBtn');
+
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+  var query = document.getElementById('query').value;
+
+  submitBtn.disabled = true;
+  resultsEl.innerHTML = '';
+  statusEl.textContent = 'Running Search, Price, Review Summarizer, and Recommendation agents. This takes 10 to 20 seconds.';
+
+  fetch('/api/search', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({query: query})
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.error) {
+      statusEl.innerHTML = '<span class="error">Error: ' + data.error + '</span>';
+      submitBtn.disabled = false;
+      return;
+    }
+
+    statusEl.textContent = '';
+
+    var candidatesById = {};
+    data.candidates.forEach(function(c) { candidatesById[c.product_id] = c; });
+
+    var html = '';
+    data.recommendation.ranked_products.forEach(function(entry) {
+      var p = candidatesById[entry.product_id];
+      if (!p) return;
+      html += '<div class="product">';
+      html += '<div class="rank">#' + entry.rank + ': ' + p.title + '</div>';
+      html += '<div class="meta">$' + p.price + ' | ' + p.rating + ' stars | ' + p.source + '</div>';
+      html += '<div class="why">' + entry.reasoning + '</div>';
+      html += '</div>';
+    });
+    html += '<div class="overall"><strong>Overall:</strong> ' + data.recommendation.overall_reasoning + '</div>';
+
+    resultsEl.innerHTML = html;
+    submitBtn.disabled = false;
+  })
+  .catch(function(err) {
+    statusEl.innerHTML = '<span class="error">Something went wrong: ' + err.message + '</span>';
+    submitBtn.disabled = false;
+  });
+});
+</script>
+
+</body>
+</html>

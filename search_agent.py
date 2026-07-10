@@ -1,12 +1,7 @@
-"""
-Search Agent - Step 1
-
-Standalone function that queries SerpAPI's Google Shopping engine
-and returns clean product data. No agent framework yet - just get
-this working reliably first.
-
-Run directly to test:  python search_agent.py
-"""
+# Search Agent - Step 1
+# Standalone function that queries SerpAPI's Google Shopping engine
+# and returns clean product data.
+# Run:  python search_agent.py
 
 import os
 import requests
@@ -18,17 +13,7 @@ SERPAPI_KEY = os.getenv("SERPAPI_KEY")
 SERPAPI_URL = "https://serpapi.com/search"
 
 
-def search_products(query: str, num_results: int = 5) -> list[dict]:
-    """
-    Search Google Shopping via SerpAPI and return a clean list of candidate products.
-
-    Args:
-        query: natural language shopping query, e.g. "wireless earbuds under $50"
-        num_results: how many candidates to return
-
-    Returns:
-        List of dicts: [{title, price, rating, source, link, product_id}, ...]
-    """
+def search_products(query, num_results=5):
     if not SERPAPI_KEY:
         raise ValueError("SERPAPI_KEY not found. Add it to your .env file.")
 
@@ -36,6 +21,9 @@ def search_products(query: str, num_results: int = 5) -> list[dict]:
         "engine": "google_shopping",
         "q": query,
         "api_key": SERPAPI_KEY,
+        "gl": "in",
+        "hl": "en",
+        "google_domain": "google.co.in",
     }
 
     response = requests.get(SERPAPI_URL, params=params, timeout=15)
@@ -61,7 +49,7 @@ def search_products(query: str, num_results: int = 5) -> list[dict]:
 
 
 if __name__ == "__main__":
-    test_query = "wireless earbuds under $50"
+    test_query = "wireless earbuds under 1000 rupees"
     print(f"Searching for: {test_query}\n")
 
     results = search_products(test_query)
@@ -71,5 +59,5 @@ if __name__ == "__main__":
     else:
         for i, product in enumerate(results, 1):
             print(f"{i}. {product['title']}")
-            print(f"   Price: ${product['price']}  |  Rating: {product['rating']}  |  Source: {product['source']}")
+            print(f"   Price: Rs.{product['price']}  |  Rating: {product['rating']}  |  Source: {product['source']}")
             print(f"   Link: {product['link']}\n")
